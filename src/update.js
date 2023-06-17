@@ -5,7 +5,7 @@ function update(dt) {
     
     // advance game clock
     gameTime += dt
-    if( (gameState==GameState.Start) & (gameTime>1000) ){
+    if( (gameState==GameState.Start) & (gameTime>10000) ){
         gameState = GameState.ReadyForFirstClick
     }
     

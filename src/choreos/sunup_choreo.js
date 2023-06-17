@@ -2,8 +2,6 @@ class SunupChoreo extends Choreo {
 
   constructor( actors ) {
       super(actors)
-      
-      this.actor_dts = this.getRandomDts(500)
       this.phase = 0
   }
   
@@ -48,13 +46,5 @@ class SunupChoreo extends Choreo {
         currentChoreo = new RandomChoreo(allActors);
       }
       
-  }
-  
-  getRandomDts(max){
-      var result = []
-      for( var i = 0 ; i < this.actors.length ; i++ ){
-          result.push(Math.random() * max)
-      }
-      return result
   }
 }

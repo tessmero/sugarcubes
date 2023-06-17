@@ -57,7 +57,9 @@ function drawActor(actor){
         if( actor.state!=ActorState.Jumping ){
             var interpRow = interpolateSpecRows(prev_spec[i],next_spec[i],cp_r)
         } else if( actor.state==ActorState.Jumping) {
-            if( actor.jumpPath.x1 > actor.jumpPath.x0 ){
+            if( actor.jumpPath.x1 == actor.jumpPath.x0 ){
+                var interpRow = all_specs[0][i]
+            }else if( actor.jumpPath.x1 > actor.jumpPath.x0 ){
                 var interpRow = all_specs[4][i]
             } else {
                 var interpRow = all_specs[1][i]
