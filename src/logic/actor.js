@@ -8,8 +8,10 @@ class Actor {
           this.targetX = x;
           this.jumpPath = null;
           
+          this.shocked = false;
           this.eyesOpen = true;
           this.mouthOpen = true;
+          this.jumpingFeetOffsets = this.getRandomJumpingFeetOffsets();
       }
       
     getY(){
@@ -35,18 +37,10 @@ class Actor {
             this.mouthOpen = !this.mouthOpen;  
         }
 
-        if( (this.state == ActorState.Idle) & (!this.atTarget())){
+        if( (!this.shocked) & (this.state == ActorState.Idle) & (!this.atTarget())){
             
             // start new jump towards target
-            var dx = this.targetX-this.x  
-            if( dx < -actorJumpDist ){
-                dx = -actorJumpDist
-            }
-            if( dx > actorJumpDist ){
-                dx = actorJumpDist
-            }
-            this.state = ActorState.Jumping;
-            this.jumpPath = new JumpPath( this.x, this.x+dx, Math.abs(dx)/2 )
+            this.startNewJump()
             
         } else if (this.state == ActorState.Jumping) {
             this.jumpPath.advance( dt );
@@ -57,6 +51,38 @@ class Actor {
                 this.t = 0;
             }
         }
+    }
+    
+    startNewJump(h=null){
+        // start new jump towards target
+        var dx = this.targetX-this.x  
+        var ajd = actorJumpDist*(1-Math.random()/2)
+        if( dx < -ajd ){
+            dx = -ajd
+        }
+        if( dx > ajd ){
+            dx = ajd
+        }
+        this.state = ActorState.Jumping;
+        if( !h ){
+            h = Math.abs(dx)/2
+        }
+        this.jumpPath = new JumpPath( this.x, this.x+dx, h )
+        this.jumpingFeetOffsets = this.getRandomJumpingFeetOffsets()
+    }
+    
+    getRandomJumpingFeetOffsets(){
+        var result = []
+        for( var i = 0 ; i < 2 ; i++ ){
+            result.push([])
+            for( var j = 0 ; j < 2 ; j++ ){
+                result[i].push([])
+                for( var k = 0 ; k < 2 ; k++ ){
+                    result[i][j].push(Math.random()-.5)
+                }
+            }
+        }
+        return result
     }
 
 }    

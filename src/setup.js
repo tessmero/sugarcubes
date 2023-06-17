@@ -6,15 +6,20 @@ function init() {
     ctx = canvas.getContext("2d");
 
     // Add event listeners
-    canvas.addEventListener("mousemove", mouseMove);
     canvas.addEventListener("click", leftClick);
-    canvas.addEventListener('contextmenu', rightClick);
     
+    // init actors
     for( var i = 0 ; i < 10 ; i++ ){
-        allActors.push(new Actor(getRandomX()));
+        var a = new Actor(getRandomX()-canvas.width)
+        a.targetX = getRandomX();
+        allActors.push(a);
     }
     currentChoreo = new RandomChoreo(allActors);
     
+    // init env
+    sunY = canvas.height+sunRadius;
+    minSunY = canvas.height/4
+
     // Start the game loop
     requestAnimationFrame(gameLoop);
 }

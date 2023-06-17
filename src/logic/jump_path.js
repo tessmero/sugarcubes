@@ -5,7 +5,7 @@ class JumpPath {
     this.x1 = x1;
     this.h = h;
     this.t = 0;
-    this.endT = Math.abs(x1-x0)/actorXSpeed;
+    this.endT = 2*h/actorXSpeed;
   }
   
   advance(dt){

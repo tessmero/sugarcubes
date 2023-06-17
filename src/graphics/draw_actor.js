@@ -1,35 +1,49 @@
 
-// actor shape/animation data
+// actor idle animation data
 var all_specs = [
-    [[0,.2,1,1,.2],[.2,1.4,.25],[.9,1.2,.25]],
-    [[0,.6,1,1,0],[.2,1.4,.25],[.8,1.4,.25]],
+    [[0,.4,1,1,0],  [.2,1.4,.25],[.8,1.4,.25]],
     [[0,.2,1,1,-.2],[.1,1.2,.25],[.8,1.4,.25]],
-    [[0,.5,1,1,0],[.2,1.4,.25],[.8,1.4,.25]],
+    [[0,.2,1,1,-.2],[.1,1.2,.25],[.8,1.4,.25]],
+    [[0,.4,1,1,0],  [.2,1.4,.25],[.8,1.4,.25]],
+    [[0,.2,1,1,.2], [.2,1.4,.25],[.9,1.2,.25]],
+    [[0,.2,1,1,.2], [.2,1.4,.25],[.9,1.2,.25]],
 ]        
 
 // animation duration (ms)
 var cp_dt = 500
 
 // feet position in spec units
-function getFootX( jumpPath ){
-  var x = jumpPath.t/jumpPath.endT
+function getFootX( actor, foot_index ){
+  var x = actor.jumpPath.t/actor.jumpPath.endT
   var k = .2
   var m = .3
   var result = (1.0-m) / 2 + m/(1+Math.exp(-(2*x-1)/k))
   
-  if( jumpPath.x1 < jumpPath.x0 ){
+  var jfo = actor.jumpingFeetOffsets[foot_index]
+  var dx = x*jfo[0][0] + (1.0-x)*jfo[0][1]
+  
+  if( actor.jumpPath.x1 < actor.jumpPath.x0 ){
     return .5 - (result-.5)
+  }else if(actor.jumpPath.x1 == actor.jumpPath.x0){
+    return (result + .5 - (result-.5))/2
   }
-  return result;
+  return result + dx*.1;
 }
-function getFootY( jumpPath ){
-  var x = jumpPath.t/jumpPath.endT
-  return 1.4-.2*Math.sin(Math.PI*x)
+function getFootY( actor, foot_index ){
+  var x = actor.jumpPath.t/actor.jumpPath.endT
+  
+  var jfo = actor.jumpingFeetOffsets[foot_index]
+  var dy = x*jfo[1][0] + (1.0-x)*jfo[1][1]
+  return 1.4-.2*Math.sin(Math.PI*x) + dy*.1
 }
 
 function drawActor(actor){
     
-    if( actor.state==ActorState.Idle ){
+    if( actor.shocked ){
+        var prev_spec = all_specs[0]
+        var next_spec = all_specs[0]
+        var cp_r = 0
+    } else if( actor.state!=ActorState.Jumping ){
         var cp_index = Math.floor( actor.t / cp_dt )
         var cp_r = (actor.t - (cp_index*cp_dt)) / cp_dt
        
@@ -40,19 +54,19 @@ function drawActor(actor){
     }
     
     for( var i = 0 ; i < prev_spec.length ; i++ ){
-        if( actor.state==ActorState.Idle ){
+        if( actor.state!=ActorState.Jumping ){
             var interpRow = interpolateSpecRows(prev_spec[i],next_spec[i],cp_r)
         } else if( actor.state==ActorState.Jumping) {
             if( actor.jumpPath.x1 > actor.jumpPath.x0 ){
-                var interpRow = all_specs[0][i]
+                var interpRow = all_specs[4][i]
             } else {
-                var interpRow = all_specs[2][i]
+                var interpRow = all_specs[1][i]
             }
         }
         
         if( (i>0) & (actor.state==ActorState.Jumping) ){
-            var dx = (i*2-3)/4
-            interpRow = [getFootX(actor.jumpPath)+dx, getFootY(actor.jumpPath), interpRow[2]]
+            var dx = (i*2-3)/4 + (i-1)*.1*actor.jumpPath.t/actor.jumpPath.endT
+            interpRow = [getFootX(actor, i-1)+dx, getFootY(actor, i-1), interpRow[2]]
         }
         
         ctx.strokeStyle = 'black'
@@ -95,32 +109,53 @@ function drawFace(row, actor){
     ctx.rect(x,y,w,h)
     ctx.clip()
    
-    if( actor.mouthOpen ){
+    if( actor.shocked ){
+        
+        
+        // draw shocked mouth
         ctx.beginPath()
-        ctx.arc( x+w/2+ox, y+h/3, w/3, 0.1*Math.PI, 0.9*Math.PI )
+        ctx.arc( x+w/2+ox, y+h/2, w/4,  0, 2*Math.PI)
         ctx.fill()
-    } else {
-        ctx.beginPath()
-        ctx.arc( x+w/2+ox, y, w/2, 0.3*Math.PI, 0.7*Math.PI )
-        ctx.stroke()
-    }
-   
-    if( actor.eyesOpen ){                
+        
+        // draw shocked eyes     
         ctx.beginPath()
         ctx.arc( x+w/4+ox, y+h/5, w/10, 0, 2*Math.PI)
         ctx.fill()
         ctx.beginPath()
         ctx.arc( x+3*w/4+ox, y+h/5, w/10, 0, 2*Math.PI)
         ctx.fill()
+        
     } else {
-       
-        ctx.beginPath()
-        ctx.arc( x+w/4+ox, y+h/3, w/6, 1.25*Math.PI, 1.75*Math.PI)
-        ctx.stroke()
-        ctx.beginPath()
-        ctx.arc( x+3*w/4+ox, y+h/3, w/6, 1.25*Math.PI, 1.75*Math.PI)
-        ctx.stroke()
+        
+        // draw idle mouth
+        if( actor.mouthOpen ){
+            ctx.beginPath()
+            ctx.arc( x+w/2+ox, y+h/3, w/3, 0.1*Math.PI, 0.9*Math.PI )
+            ctx.fill()
+        } else {
+            ctx.beginPath()
+            ctx.arc( x+w/2+ox, y, w/2, 0.3*Math.PI, 0.7*Math.PI )
+            ctx.stroke()
+        }
+        
+        // draw idle eyes
+        if( actor.eyesOpen ){                
+            ctx.beginPath()
+            ctx.arc( x+w/4+ox, y+h/5, w/10, 0, 2*Math.PI)
+            ctx.fill()
+            ctx.beginPath()
+            ctx.arc( x+3*w/4+ox, y+h/5, w/10, 0, 2*Math.PI)
+            ctx.fill()
+        } else {
+            ctx.beginPath()
+            ctx.arc( x+w/4+ox, y+h/3, w/6, 1.25*Math.PI, 1.75*Math.PI)
+            ctx.stroke()
+            ctx.beginPath()
+            ctx.arc( x+3*w/4+ox, y+h/3, w/6, 1.25*Math.PI, 1.75*Math.PI)
+            ctx.stroke()
+        }
     }
+   
    
     // stop clipping
     ctx.restore()
@@ -136,11 +171,13 @@ function drawSpecRow(row, actor){
         ctx.fillRect( x, y, m*row[2], m*row[3] )
         ctx.strokeRect( x, y, m*row[2], m*row[3] )
     } else if( row.length == 3 ){
+        var a = Math.PI/6
         ctx.beginPath()
-        ctx.arc( x, y, m*row[2], 0, 2 * Math.PI, false)
+        ctx.arc( x, y, m*row[2], Math.PI-a, a, false)
         ctx.fill()
         ctx.beginPath()
-        ctx.arc( x, y, m*row[2], 0, 2 * Math.PI, false)
+        ctx.arc( x, y, m*row[2], Math.PI-a, a, false)
+        ctx.closePath()
         ctx.stroke()
     }
 }

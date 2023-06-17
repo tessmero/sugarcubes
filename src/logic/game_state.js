@@ -1,7 +1,8 @@
 class GameState {
-  static StartMenu = new GameState('StartMenu');
-  static PauseMenu = new GameState('PauseMenu');
-  static Playing = new GameState('Playing');
+  static Start = new GameState('StartMenu');
+  static ReadyFirstClick = new GameState('ReadyFirstClick');
+  static Sunny = new GameState('Sunny');
+  static ReadyForSecondClick = new GameState('ReadyForSecondClick');
 
   constructor(name,dx,dy) {
     this.name = name;

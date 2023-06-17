@@ -12,7 +12,7 @@ function nudgeOverlappingActors(actors,dt){
             for( var j = 0 ; j < i ; j++ ){
                 if( actors[j].atTarget() ){
                     var dx = actors[j].x-actors[i].x
-                    if( Math.abs(dx) < actorSize ){
+                    if( Math.abs(dx) < actorSize*1.2 ){
                         var m = nudgeSpeed * dt
                         actors[i].x -= dx*m
                         actors[i].targetX = actors[i].x

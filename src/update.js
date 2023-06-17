@@ -3,6 +3,12 @@
 // Update game logic
 function update(dt) {
     
+    // advance game clock
+    gameTime += dt
+    if( (gameState==GameState.Start) & (gameTime>1000) ){
+        gameState = GameState.ReadyForFirstClick
+    }
+    
     // update dance sequence
     if( currentChoreo ) {
         currentChoreo.update(dt)
@@ -13,4 +19,14 @@ function update(dt) {
         allActors[i].update(dt);
     }
     
+    // update environment
+    if( gameState == GameState.Sunny ){
+        if( sunY > minSunY ){
+            sunY  = Math.max( minSunY, sunY-sunSpeed*dt )
+        }
+        
+        if( (colorLevel < 1) & (sunY < 400) ){
+            colorLevel = Math.min( 1, colorLevel+colorUpSpeed*dt )
+        }
+    }
 }
